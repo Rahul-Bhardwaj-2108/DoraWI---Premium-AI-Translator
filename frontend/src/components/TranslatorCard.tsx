@@ -350,7 +350,11 @@ export const TranslatorCard: React.FC = () => {
 
         } catch (err: any) {
             console.error(err);
-            setTranslatedText("Error processing document: " + (err.response?.data?.message || err.message));
+            let errorMessage = err.response?.data?.message || err.message || "Unknown error";
+            if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("limit")) {
+                errorMessage = "⚠️ Usage limit exceeded. Please try again later or use a different API key.";
+            }
+            setTranslatedText("Error processing document: " + errorMessage);
         } finally {
             setIsTranslating(false);
         }
@@ -387,7 +391,15 @@ export const TranslatorCard: React.FC = () => {
 
         } catch (error: any) {
             console.error("Translation error:", error);
-            setTranslatedText(`Error: ${error.message || "Unknown error"}`);
+            let errorMessage = error.message || "Unknown error";
+
+            if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("limit")) {
+                errorMessage = "⚠️ Usage limit exceeded. Please try again later or use a different API key.";
+            } else if (errorMessage.includes("503")) {
+                errorMessage = "⚠️ Service temporarily unavailable. Please try again in a moment.";
+            }
+
+            setTranslatedText(errorMessage);
         } finally {
             setIsTranslating(false);
         }
